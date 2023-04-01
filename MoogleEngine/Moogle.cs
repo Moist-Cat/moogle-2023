@@ -17,7 +17,6 @@ namespace MoogleEngine;
 // n. Markov chain
 // ???
 // Profit!
-//
 
 class TopRanks {
     /* Data structure containing only the top N values in a dictionary
@@ -87,7 +86,7 @@ class TopRanks {
         try {
             return JsonSerializer.Deserialize<Dictionary<string, List<Tuple<string, float>>>>(File.ReadAllText(CACHE_TOP.ToString()));
         }
-        catch (System.TypeInitializationException e) {
+        catch (System.Text.Json.JsonException e) {
            // empty 
            // return new
            return this._dict;
@@ -103,7 +102,7 @@ class FileTools {
     static public DirectoryInfo BASE_DIR = new DirectoryInfo(
         Assembly.GetAssembly(typeof (Moogle)).Location
     ).Parent.Parent.Parent.Parent.Parent;
-    static public DirectoryInfo DATA_DIR = new DirectoryInfo(BASE_DIR.ToString() + "/files");
+    static public DirectoryInfo DATA_DIR = new DirectoryInfo(BASE_DIR.ToString() + "/Content");
     // cache files
     static public FileInfo CACHE_FILE = new FileInfo(BASE_DIR.ToString() + "/cache.json");
     static public FileInfo CACHE_WC = new FileInfo(BASE_DIR.ToString() + "/cache_wc.json");
@@ -193,10 +192,10 @@ class FileTools {
         foreach(string line in File.ReadAllLines(filename)) {
             foreach(string word in line.Split(" ")) {
                 // ignore len(word) < 3
-                if (word.Length < 3 || !Regex.Match(word, "^[a-zA-Z]+$").Success) {
+                if (word.Length < 3 || !Regex.Match(word, @"^[a-zA-Z,.;:]+$").Success) {
                     continue;
                 }
-                string lword = word.ToLower();
+                string lword = Regex.Replace(word.ToLower(), @"[,.;:]", "");
                 
                 if (!words.ContainsKey(lword)) {
                     words[lword] = 0;
@@ -313,7 +312,7 @@ class FileTools {
         try {
             return JsonSerializer.Deserialize<Dictionary<string, int>>(File.ReadAllText(file.ToString()));
         }
-        catch (System.TypeInitializationException e) {
+        catch (System.Text.Json.JsonException e) {
            // empty 
            // return new
            return WC;
@@ -327,7 +326,7 @@ class FileTools {
         try {
             return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, int>>>(File.ReadAllText(file.ToString()));
         }
-        catch (System.TypeInitializationException e) {
+        catch (System.Text.Json.JsonException e) {
            // empty 
            // return new
            return RANKS;
@@ -342,7 +341,7 @@ class FileTools {
         try {
             return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, float>>>(File.ReadAllText(file.ToString()));
         }
-        catch (System.TypeInitializationException e) {
+        catch (System.Text.Json.JsonException e) {
            // empty 
            // return new
            return TFIDF;
@@ -366,14 +365,22 @@ class FileTools {
 
         Console.WriteLine("Fetching highlight for " + filename);
         string text = File.ReadAllText(filename);
-        StringBuilder highlight = new StringBuilder("");
+        string match = "";
         foreach(string word in words) {
-            Console.WriteLine(word);
-            highlight.Append(Regex.Match(text, @".*" + word + @".*\n").Value + "\n");
+            match = Regex.Match(text, @".*" + word + @".*\n").Value;
+            if (match.Length > 0) {
+                if (match.Length > 500) {
+                    // get first 500
+                    match = match.Substring(0, 500);
+                    // XXX the word might not appear
+                }
+                Console.WriteLine(match + "\n");
+                // match one line to speed up things
+                break;
+            }
         }
-        Console.WriteLine(highlight.ToString());
 
-        return highlight.ToString();
+        return match + "\n";
     }
 }
 
@@ -384,9 +391,11 @@ public static class Moogle
         FileTools ft = new FileTools();
         // we don't want duplicates
         Dictionary<string, float> candidates = new Dictionary<string, float>();
+        string word;
 
         // partition the terms of the query
-        foreach(string word in query.Split(" ")) {
+        foreach(string _word in query.Split(" ")) {
+            word = _word.ToLower();
             if (word.Length < 3) {
                 // useless
                 continue;

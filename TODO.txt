@@ -1,5 +1,3 @@
-> XXX reverse the sort (it's showing the LEAST relevant results)
 > suggestion with meme algo
 
-> clean "word." "word,", normalize
 > duplicates

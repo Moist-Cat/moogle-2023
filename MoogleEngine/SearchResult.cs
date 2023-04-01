@@ -2,6 +2,19 @@ namespace MoogleEngine;
 
 public class SearchResult
 {
+    private void SortItems() {
+        SearchItem temp;
+        for(int i = 0; i < this.items.Length; i++) {
+            Console.WriteLine("{0} {1}", this.items[i].Score, this.items[i].Title);
+            for (int j = 0; j < this.items.Length - i - 1; j++) {
+                if (this.items[j].Score < this.items[j+1].Score) {
+                    temp = this.items[j+1];
+                    this.items[j+1] = this.items[j];
+                    this.items[j] = temp;
+                }
+            }
+        }
+    }
     private SearchItem[] items;
 
     public SearchResult(SearchItem[] items, string suggestion="")
@@ -11,6 +24,7 @@ public class SearchResult
         }
 
         this.items = items;
+        this.SortItems();
         this.Suggestion = suggestion;
     }
 
