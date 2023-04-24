@@ -114,9 +114,9 @@ class FileTools {
     // filenames
     static private HashSet<string> FILES = LoadHSJSON(CACHE_FILE);
     // number of files containing a word
-    static private Dictionary<string, int> WC = LoadDictJSON(CACHE_WC);
-    static private Dictionary<string, Dictionary<string, int>> RANKS = LoadNDictJSON(CACHE_RANKS);
-    static private Dictionary<string, Dictionary<string, float>> TFIDF = LoadFloaNtDictJSON(CACHE_TFIDF);
+    static public Dictionary<string, int> WC = LoadDictJSON(CACHE_WC);
+    static public Dictionary<string, Dictionary<string, int>> RANKS = LoadNDictJSON(CACHE_RANKS);
+    static public Dictionary<string, Dictionary<string, float>> TFIDF = LoadFloaNtDictJSON(CACHE_TFIDF);
     static public TopRanks TopRanked = new TopRanks();
 
     static public int CACHE_TIMEOUT = 5; // minutes
@@ -126,7 +126,7 @@ class FileTools {
         GetFiles(DATA_DIR);
     }
 
-    private HashSet<string> _GetFiles(DirectoryInfo dir) {
+    private static HashSet<string> _GetFiles(DirectoryInfo dir) {
         /* Private.
          * Get all the filenames from the BASE_DIR/files directory recursively 
          * */
@@ -150,13 +150,13 @@ class FileTools {
         }
         foreach(DirectoryInfo d in dir.GetDirectories()) {
             Console.WriteLine("INFO: Searching dir" + d.ToString());
-            files.UnionWith(this._GetFiles(d));
+            files.UnionWith(_GetFiles(d));
         }
 
         return files;
     }
 
-    public HashSet<string> GetFiles(DirectoryInfo dir) {
+    public static HashSet<string> GetFiles(DirectoryInfo dir) {
         /* Public wrapper to use cache 
          *
          * XXX I wish i could join those in a single method
@@ -166,13 +166,13 @@ class FileTools {
             // update cache every 5 mins
             Console.WriteLine("WARNING: Updating cache for " + CACHE_FILE.ToString());
             // _GetFiles only gets the new files
-            HashSet<string> new_files = this._GetFiles(dir);
+            HashSet<string> new_files = _GetFiles(dir);
             if (new_files.Count != 0) {
                 Console.WriteLine("INFO: Got " + new_files.Count.ToString() + " new files");
                 Console.WriteLine("WARNING: Updating cache for " + CACHE_RANKS.ToString());
-                this._GetRanks(new_files);
+                _GetRanks(new_files);
                 Console.WriteLine("WARNING: Updating cache for " + CACHE_TFIDF.ToString());
-                TFIDF = this.UpdateTfIdf();
+                TFIDF = UpdateTfIdf();
                 SaveJSON(RANKS, CACHE_RANKS);
                 // also update the wc dictionary
                 SaveJSON(WC, CACHE_WC);
@@ -207,7 +207,7 @@ class FileTools {
     }
 
 
-    private void _GetRanks(HashSet<string> filenames) {
+    private static void _GetRanks(HashSet<string> filenames) {
         foreach(string filename in filenames) {
             // avoid using the costly GetWords method
             if (!RANKS.ContainsKey(filename)) {
@@ -219,13 +219,13 @@ class FileTools {
         }
     }
 
-    public Dictionary<string, Dictionary<string, int>> GetRanks(HashSet<string> filenames) {
+    public static Dictionary<string, Dictionary<string, int>> GetRanks(HashSet<string> filenames) {
         /* Public wrapper with cache for wc */
         _GetRanks(filenames);
         return RANKS;
     }
 
-    private Dictionary<string, Dictionary<string, float>> UpdateTfIdf() {
+    private static Dictionary<string, Dictionary<string, float>> UpdateTfIdf() {
         /* Term Frequency--Inverse term frequency algorithm implementation
          * https://en.wikipedia.org/wiki/Tf%E2%80%93idf
          *
@@ -315,7 +315,7 @@ class FileTools {
         catch (System.Text.Json.JsonException e) {
            // empty 
            // return new
-           return WC;
+           return new Dictionary<string, int>();
         }
     }
     public static Dictionary<string, Dictionary<string, int>> LoadNDictJSON(FileInfo file) {
@@ -329,7 +329,7 @@ class FileTools {
         catch (System.Text.Json.JsonException e) {
            // empty 
            // return new
-           return RANKS;
+           return new Dictionary<string, Dictionary<string, int>>();
         }
     }
 
@@ -344,7 +344,7 @@ class FileTools {
         catch (System.Text.Json.JsonException e) {
            // empty 
            // return new
-           return TFIDF;
+           return new Dictionary<string, Dictionary<string, float>>();
         }
 
     }
