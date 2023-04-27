@@ -1,0 +1,61 @@
+<h1>The Moogle! search engine</h1>
+<p><img alt="" src="moogle.png" /></p>
+<h2>What problem does this software solve?</h2>
+<p>Given a query, return the most relevant files from the Content folder.</p>
+<h2>Requirements</h2>
+<p>Dotnet 6.0</p>
+<h2>Portability</h2>
+<p>It 'should' work on Windows. (not tested)</p>
+<h2>Quick guide</h2>
+<ol>
+<li>
+<p>Start the server</p>
+<p>make dev</p>
+</li>
+<li>
+<p>Enter http://localhost:5000/</p>
+</li>
+<li>
+<p>Write something in the search bar</p>
+</li>
+<li>
+<p>Click on 'Buscar'</p>
+</li>
+<li>
+<p>???</p>
+</li>
+<li>
+<p>Profit</p>
+</li>
+</ol>
+<h2>FAQ</h2>
+<h3>Taking too long</h3>
+<p>The first query takes 10s to 1min (depending on your hardware). The following queries will be faster.</p>
+<h3>Can I put X file in Content?? Will Moogle! load it??</h3>
+<p>Moogle! only supports .cs, .txt, and .py files. But you can add whatever extension you want to the code manually editing the following line.</p>
+<p><code>cs
+static public string[] PATTERNS = new string[]</code></p>
+<p>In MoogleServer/Moogle.cs</p>
+<h3>Can I add new files after the first query?</h3>
+<p>Yes. It will load after &lt;5 minutes</p>
+<h3>Why after 5 minutes?</h3>
+<p>It would be too slow to check every time.</p>
+<h3>It just shows a black screen after I try to serch for [word]!</h3>
+<p>The word is not in the files.</p>
+<h3>Some weird "json" files just appeared out of nowhere</h3>
+<p>Those are cache files. After the first query Moogle! saves all the data it requires in those files to speed up searches.
+Feel free to delete them.</p>
+<h3>What is tf-idf and why does Moogle! use it?</h3>
+<p>One of the most naive ways to get a criteria to sort relevant files given a set of words is to see how many times those words are repeated in a text. However, common words like "the" or "is" will have inflated scores and they are not really relevant for our needs. A smart way to filter those words is to get how many times it's found in all files and divide the number of times the word is found in every file by this value.
+That's exactly what <a href="https://en.wikipedia.org/wiki/Tf%E2%80%93idf">tf-idf</a> is. With this value we can have a more sensible crteria to sort the results of a query.</p>
+<h2>How does it work?</h2>
+<h3>Startup (during first query)</h3>
+<ol>
+<li>Moogle! searches all valid files inside the Content folder</li>
+<li>After all the filenames are stored, Moogle! counts the words on each file and assigns that count to their corresponding file</li>
+<li>Calculates the <a href="https://en.wikipedia.org/wiki/Tf%E2%80%93idf">tf-idf</a> for each word and stores only the top 5 files with the highest tf-idf score for that word</li>
+<li>Dumps the cache.</li>
+<li>Parses the query and get the candidates (files)-- 5 per word of the query.</li>
+<li>Calculate the total score (sum of the tf-idf of the file for each matching word of the query) and find a highlight of the text to show to the user</li>
+<li>Sort the items and hand them to the front-end</li>
+</ol>

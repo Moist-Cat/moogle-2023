@@ -10,28 +10,32 @@ namespace MoogleEngine;
 
 // 1. Load docs
 // (this should be in a sqlite but whatever)
-// 2. Create hashtable[word, Arr<doc>[5]] (sort eagerly to avoid adding unnecessary shite) to add the top ranks
-// 3. Create hashtable[doc, HT[word, count]]
+// 2. Create Dict[word, Arr<doc>[5]] (sort eagerly to avoid errors) to add the top ranks
+// 3. Create Dict[doc, HT[word, count]] to vectorize the documents
 // 4. Rank queries with tf-idf
-// 5. Store it in the hashtable created in 2.
-// n. Markov chain
-// ???
-// Profit!
+// 5. Store it in another dict
+// 6. ???
+// 7. Profit!
 
 class TopRanks {
-    /* Data structure containing only the top N values in a dictionary
-     * of strings given a criteria */
-    //
+    /* Data structure containing only the top N values in a Dict<string, float>
+     * given a criteria */
+
+
     private int MAX_RANKED_VALUES = 5;
-    private Dictionary<string, List<Tuple<string, float>>> _dict;
-    static public FileInfo CACHE_TOP = new FileInfo(FileTools.BASE_DIR.ToString() + "/cache_top.json");
+    private Dictionary<string, List<Tuple<string, float>>> _dict = new Dictionary<string, List<Tuple<string, float>>>();
+    static public FileInfo CACHE_TOP = new FileInfo(Ranker.BASE_DIR.ToString() + "/cache_top.json");
 
     public TopRanks() {
-        this._dict = new Dictionary<string, List<Tuple<string, float>>>();
         this._dict = Load();
     }
 
     public void Add(string key, string val, float criteria) {
+        /* 
+         * Try to add a file to the list of files with highest *criteria*
+         * 
+         */
+
         if (!this._dict.ContainsKey(key)) {
             // the word is new so it's easier
             Console.WriteLine("INFO: New ranked value: {0}, key: {1}", val, key);
@@ -45,7 +49,7 @@ class TopRanks {
                 if (last_val.Item2 < criteria) {
                     // replace
                     Console.WriteLine(
-                        "INFO: Replaced a ranked value {0} ({1})in favor of {1} ({2})"
+                        "INFO: Replaced a ranked value {0} ({1}) in favor of {1} ({2})"
                     , last_val.Item1, last_val.Item2, val, criteria);
                     this._dict[key][MAX_RANKED_VALUES - 1] = new Tuple<string, float>(val, criteria);
                 }
@@ -66,9 +70,8 @@ class TopRanks {
     }
 
     public List<Tuple<string, float>> Get(string key) {
-        // XXX handle key not in dict
         if (!this._dict.ContainsKey(key)) {
-            Console.WriteLine("Key not found " + key);
+            Console.WriteLine("ERROR: Key not found " + key);
             return new List<Tuple<string, float>>();
         }
         return this._dict[key];
@@ -89,46 +92,53 @@ class TopRanks {
         catch (System.Text.Json.JsonException e) {
            // empty 
            // return new
-           return this._dict;
+           return new Dictionary<string, List<Tuple<string, float>>>();
         }
     }
 
 }
 
-class FileTools {
-    /* Singleton to handle files and load words to memory */
+class Ranker {
+    /* Singleton
+     *
+     * Load files in memory
+     * */
 
     // important directories
     static public DirectoryInfo BASE_DIR = new DirectoryInfo(
         Assembly.GetAssembly(typeof (Moogle)).Location
     ).Parent.Parent.Parent.Parent.Parent;
     static public DirectoryInfo DATA_DIR = new DirectoryInfo(BASE_DIR.ToString() + "/Content");
+
     // cache files
     static public FileInfo CACHE_FILE = new FileInfo(BASE_DIR.ToString() + "/cache.json");
     static public FileInfo CACHE_WC = new FileInfo(BASE_DIR.ToString() + "/cache_wc.json");
-    static public FileInfo CACHE_RANKS = new FileInfo(BASE_DIR.ToString() + "/cache_ranks.json");
+    static public FileInfo CACHE_VECTORS = new FileInfo(BASE_DIR.ToString() + "/cache_vectors.json");
     static public FileInfo CACHE_TFIDF = new FileInfo(BASE_DIR.ToString() + "/cache_tfidf.json");
 
     // other attributes
     static public string[] PATTERNS = new string[] {"*.txt", "*.cs", "*.py"};
+
     // filenames
     static private HashSet<string> FILES = LoadHSJSON(CACHE_FILE);
+
     // number of files containing a word
     static public Dictionary<string, int> WC = LoadDictJSON(CACHE_WC);
-    static public Dictionary<string, Dictionary<string, int>> RANKS = LoadNDictJSON(CACHE_RANKS);
+    static public Dictionary<string, Dictionary<string, int>> VECTORS = LoadNDictJSON(CACHE_VECTORS);
     static public Dictionary<string, Dictionary<string, float>> TFIDF = LoadFloaNtDictJSON(CACHE_TFIDF);
     static public TopRanks TopRanked = new TopRanks();
 
     static public int CACHE_TIMEOUT = 5; // minutes
 
-    public FileTools() {
-        // reload caches and stuff
+    public Ranker() {
+        // reload cache
         GetFiles(DATA_DIR);
     }
 
     private static HashSet<string> _GetFiles(DirectoryInfo dir) {
-        /* Private.
+        /*
          * Get all the filenames from the BASE_DIR/files directory recursively 
+         * 
          * */
 
         // ASCII text files: .txt .py .cs
@@ -159,22 +169,28 @@ class FileTools {
     public static HashSet<string> GetFiles(DirectoryInfo dir) {
         /* Public wrapper to use cache 
          *
-         * XXX I wish i could join those in a single method
+         * XXX I wish i could join all the wrappers in a single method
          * */
 
         if (CACHE_FILE.LastWriteTime.AddMinutes(5) < DateTime.Now) {
             // update cache every 5 mins
             Console.WriteLine("WARNING: Updating cache for " + CACHE_FILE.ToString());
             // _GetFiles only gets the new files
+            // NOTE we could follow Dr. Piad's advice and update only every N new files
+            // but we would have to keep track of the count
+            // NOTE There is also the event where a file is modified. We would have an invalid cache.
+            // To solve that we would have to keep track of the hashes of the files and
+            // check all them every N minutes. A costly operation without too much reward for
+            // our use-case.
             HashSet<string> new_files = _GetFiles(dir);
             if (new_files.Count != 0) {
                 Console.WriteLine("INFO: Got " + new_files.Count.ToString() + " new files");
-                Console.WriteLine("WARNING: Updating cache for " + CACHE_RANKS.ToString());
-                _GetRanks(new_files);
+                Console.WriteLine("WARNING: Updating cache for " + CACHE_VECTORS.ToString());
+                Vectorize(new_files);
                 Console.WriteLine("WARNING: Updating cache for " + CACHE_TFIDF.ToString());
                 TFIDF = UpdateTfIdf();
-                SaveJSON(RANKS, CACHE_RANKS);
-                // also update the wc dictionary
+                SaveJSON(VECTORS, CACHE_VECTORS);
+                // also update the wc and tfidf dictionaries
                 SaveJSON(WC, CACHE_WC);
                 SaveJSON(TFIDF, CACHE_TFIDF);
             }
@@ -187,14 +203,15 @@ class FileTools {
     }
 
     public static Dictionary<string, int> GetWords(string filename) {
-        /* Count words from a file */
+        /* Count words of a file */
         Dictionary<string, int> words = new Dictionary<string, int>();
         foreach(string line in File.ReadAllLines(filename)) {
             foreach(string word in line.Split(" ")) {
-                // ignore len(word) < 3
+                // ignore len(word) < 3 and anything that doesn't look like a word
                 if (word.Length < 3 || !Regex.Match(word, @"^[a-zA-Z,.;:]+$").Success) {
                     continue;
                 }
+                // clean up
                 string lword = Regex.Replace(word.ToLower(), @"[,.;:]", "");
                 
                 if (!words.ContainsKey(lword)) {
@@ -207,22 +224,30 @@ class FileTools {
     }
 
 
-    private static void _GetRanks(HashSet<string> filenames) {
+    public static void Vectorize(HashSet<string> filenames) {
+        /* Map all the files with their word count for each word
+         *
+         * {
+         * [filename]: {
+         *     [word_1]: [count_1],
+         *     [word_2]: [count_2],
+         *     ...
+         * },
+         * [filename]: {
+         * ...
+         * },
+         * }
+         *
+         * */
         foreach(string filename in filenames) {
             // avoid using the costly GetWords method
-            if (!RANKS.ContainsKey(filename)) {
-                Console.WriteLine("INFO: " + filename + " sucessfully was ranked");
-                RANKS[filename] = GetWords(filename);
+            if (!VECTORS.ContainsKey(filename)) {
+                Console.WriteLine("INFO: " + filename + " was sucessfully vectorized");
+                VECTORS[filename] = GetWords(filename);
                 // update the other dict
-                UpdateWC(filename, RANKS[filename]);
+                UpdateWC(filename, VECTORS[filename]);
             }
         }
-    }
-
-    public static Dictionary<string, Dictionary<string, int>> GetRanks(HashSet<string> filenames) {
-        /* Public wrapper with cache for wc */
-        _GetRanks(filenames);
-        return RANKS;
     }
 
     private static Dictionary<string, Dictionary<string, float>> UpdateTfIdf() {
@@ -238,8 +263,8 @@ class FileTools {
         Dictionary<string, Dictionary<string, float>> docs_tfidf = new Dictionary<string, Dictionary<string, float>>();
         // The formula is pretty simple so we can (and it's more efficient)
         // to calculate everything at once
-        int N = RANKS.Count();
-        foreach(KeyValuePair<string, Dictionary<string, int>> file in RANKS) {
+        int N = VECTORS.Count();
+        foreach(KeyValuePair<string, Dictionary<string, int>> file in VECTORS) {
             string filename = file.Key;
             Dictionary<string, int> words = file.Value;
             // here we will store a dict with the tf-idf value for 
@@ -357,7 +382,7 @@ class FileTools {
     }
 
     public static int GetFileWC(string filename, string word) {
-        return RANKS[filename][word];
+        return VECTORS[filename][word];
     }
 
     public static string GetHighlight(string filename, string[] words) {
@@ -388,7 +413,7 @@ public static class Moogle
 {
     public static SearchResult Query(string query) {
         // reload caches
-        FileTools ft = new FileTools();
+        Ranker rk = new Ranker();
         // we don't want duplicates
         Dictionary<string, float> candidates = new Dictionary<string, float>();
         string word;
@@ -400,8 +425,8 @@ public static class Moogle
                 // useless
                 continue;
             }
-            // XXX case FileTools.TopRanked.Get(word) == []
-            foreach (Tuple<string, float> candidate in FileTools.TopRanked.Get(word)) {
+            // XXX case Ranker.TopRanked.Get(word) == []
+            foreach (Tuple<string, float> candidate in Ranker.TopRanked.Get(word)) {
                 //word = candidate.Item1
                 //tfidf = candidate.Item2;
                 Console.WriteLine("Found candidate " + candidate.Item1);
@@ -421,7 +446,7 @@ public static class Moogle
         int count = 0;
         foreach(KeyValuePair<string, float> file in candidates) {
             // where Key is the filename and Value the score
-            items[count++] = new SearchItem(file.Key, FileTools.GetHighlight(file.Key, query.Split()), file.Value);
+            items[count++] = new SearchItem(file.Key, Ranker.GetHighlight(file.Key, query.Split()), file.Value);
         }
 
         return new SearchResult(items, query);
