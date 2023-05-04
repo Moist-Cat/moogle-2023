@@ -79,7 +79,7 @@ class TopRanks {
 
     public void Save() {
         string jfiles = JsonSerializer.Serialize(this._dict);
-        File.WriteAllTextAsync(CACHE_TOP.ToString(), jfiles);
+        File.WriteAllText(CACHE_TOP.ToString(), jfiles);
     }
 
     public Dictionary<string, List<Tuple<string, float>>> Load() {
@@ -307,19 +307,19 @@ class Ranker {
 
     public static void SaveJSON(HashSet<string> files, FileInfo outfile) {
         string jfiles = JsonSerializer.Serialize(files);
-        File.WriteAllTextAsync(outfile.ToString(), jfiles);
+        File.WriteAllText(outfile.ToString(), jfiles);
     }
     public static void SaveJSON(Dictionary<string, int> files, FileInfo outfile) {
         string jfiles = JsonSerializer.Serialize(files);
-        File.WriteAllTextAsync(outfile.ToString(), jfiles);
+        File.WriteAllText(outfile.ToString(), jfiles);
     }
     public static void SaveJSON(Dictionary<string, Dictionary<string, int>> files, FileInfo outfile) {
         string jfiles = JsonSerializer.Serialize(files);
-        File.WriteAllTextAsync(outfile.ToString(), jfiles);
+        File.WriteAllText(outfile.ToString(), jfiles);
     }
     public static void SaveJSON(Dictionary<string, Dictionary<string, float>> files, FileInfo outfile) {
         string jfiles = JsonSerializer.Serialize(files);
-        File.WriteAllTextAsync(outfile.ToString(), jfiles);
+        File.WriteAllText(outfile.ToString(), jfiles);
     }
 
     public static HashSet<string> LoadHSJSON(FileInfo file) {
