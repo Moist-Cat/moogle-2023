@@ -24,7 +24,7 @@ class TopRanks {
 
     private int MAX_RANKED_VALUES = 5;
     private Dictionary<string, List<Tuple<string, float>>> _dict = new Dictionary<string, List<Tuple<string, float>>>();
-    static public FileInfo CACHE_TOP = new FileInfo(Ranker.BASE_DIR.ToString() + "/cache_top.json");
+    static public FileInfo CACHE_TOP = new FileInfo(Path.Join(Ranker.BASE_DIR.ToString(), "cache_top.json"));
 
     public TopRanks() {
         this._dict = Load();
@@ -108,13 +108,13 @@ class Ranker {
     static public DirectoryInfo BASE_DIR = new DirectoryInfo(
         Assembly.GetAssembly(typeof (Moogle)).Location
     ).Parent.Parent.Parent.Parent.Parent;
-    static public DirectoryInfo DATA_DIR = new DirectoryInfo(BASE_DIR.ToString() + "/Content");
+    static public DirectoryInfo DATA_DIR = new DirectoryInfo(Path.Join(BASE_DIR.ToString(), "Content"));
 
     // cache files
-    static public FileInfo CACHE_FILE = new FileInfo(BASE_DIR.ToString() + "/cache.json");
-    static public FileInfo CACHE_WC = new FileInfo(BASE_DIR.ToString() + "/cache_wc.json");
-    static public FileInfo CACHE_VECTORS = new FileInfo(BASE_DIR.ToString() + "/cache_vectors.json");
-    static public FileInfo CACHE_TFIDF = new FileInfo(BASE_DIR.ToString() + "/cache_tfidf.json");
+    static public FileInfo CACHE_FILE = new FileInfo(Path.Join(BASE_DIR.ToString(), "cache.json"));
+    static public FileInfo CACHE_WC = new FileInfo(Path.Join(BASE_DIR.ToString(), "cache_wc.json"));
+    static public FileInfo CACHE_VECTORS = new FileInfo(Path.Join(BASE_DIR.ToString(), "cache_vectors.json"));
+    static public FileInfo CACHE_TFIDF = new FileInfo(Path.Join(BASE_DIR.ToString(), "cache_tfidf.json"));
 
     // other attributes
     static public string[] PATTERNS = new string[] {"*.txt", "*.cs", "*.py"};
@@ -287,7 +287,7 @@ class Ranker {
     }
 
     public static void UpdateWC(string filename, Dictionary<string, int> words) {
-        /* Received a dictionary of words for a file and updates the word count 
+        /* Receives a dictionary of words for a file and updates the word count 
          * accordingly
          */
         Console.WriteLine("INFO: Updating wc for {0}", filename);
