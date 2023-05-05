@@ -53,7 +53,7 @@ public static class Moogle
 
         string suggestion = "";
         if (items.Length == 0) {
-            Utils.GetCloseMatches(query, Ranker.TopRanked.GetKeys());
+            suggestion = Utils.GetCloseMatches(query, Ranker.TopRanked.GetKeys()).Get(query)[0].Item1;
         }
 
         return new SearchResult(items, suggestion);

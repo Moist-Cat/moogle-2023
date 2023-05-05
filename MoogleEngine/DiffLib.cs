@@ -9,8 +9,6 @@ class SequenceMatcher {
     public string a;
     public string b;
     Dictionary<char, List<int>> bindex;
-    // XXX update cache
-    List<int[]> matching_blocks = new List<int[]>();
 
     public SequenceMatcher(string a="", string b="") {
         SetSeq1(a);
@@ -32,7 +30,7 @@ class SequenceMatcher {
             if (!result.ContainsKey(letter)) {
                 result[letter] = new List<int>();
             }
-            result[letter].Append(i);
+            result[letter].Add(i);
         }
         return result;
     }
@@ -59,6 +57,8 @@ class SequenceMatcher {
         }
         int besti = alo, bestj = blo, bestsize = 0, k, temp_j;
         Dictionary<int, int> j2len = new Dictionary<int, int>(), newj2len = new Dictionary<int, int>();
+        // During the iteration we save the value of j in a dict (j2len)
+        // to count the longest match ending with a[i-1] and b[j]
 
         for (int i = alo; i < ahi; i++) {
             if (!this.bindex.ContainsKey(a[i]))  {
@@ -90,12 +90,14 @@ class SequenceMatcher {
             j2len = newj2len;
         }
         
+        // lookbehind
         while ((besti > alo) && (bestj > blo) && (a[besti-1] == b[bestj-1])) {
             besti -= 1;
             bestj -= 1;
             bestsize += 1;
         }
 
+        // lookahead
         while ((besti+bestsize < ahi) && (bestj+bestsize < bhi) && (a[besti+bestsize] == b[bestj+bestsize])) {
             bestsize += 1;
         }
@@ -118,14 +120,14 @@ class SequenceMatcher {
 
 
     private List<int[]> _GetMatchingBlocks(int alo, int ahi, int blo, int bhi) {
-        matching_blocks = new List<int[]>();
+        List<int[]> matching_blocks = new List<int[]>();
         int[] x = this.FindLongestMatch(alo, ahi, blo, bhi);
         int i = x[0];
         int j = x[1];
         int k = x[2];
 
         if (k != 0) { // k == 0 => no match
-            matching_blocks.Append(x);
+            matching_blocks.Add(x);
             // a[alo:i] vs b[blo:j] unknown
             // a[i:i+k] same as b[j:j+k]
             // a[i+k:ahi] vs b[j+k:bhi] unknown
@@ -133,18 +135,17 @@ class SequenceMatcher {
                 // extend
                 List<int[]> matches = _GetMatchingBlocks(alo, i, blo, j);
                 foreach(int[] match in matches) {
-                    matching_blocks.Append(match);
+                    matching_blocks.Add(match);
                 }
             }
             if ((i+k < ahi) && (j+k < bhi)) {
                 // extend
                 List<int[]> matches = _GetMatchingBlocks(i+k, ahi,j+k, bhi);
                 foreach(int[] match in matches) {
-                    matching_blocks.Append(match);
+                    matching_blocks.Add(match);
                 }
             }
         }
-        //Console.WriteLine("INFO: Found {0} matching blocks", matching_blocks.Count);
         return matching_blocks;
     }
 
@@ -157,15 +158,11 @@ class SequenceMatcher {
          * The last tuple is a dummy. len(a), len(b), 0.
          *
          * */
-        if (this.matching_blocks.Count > 0) {
-            // cache
-            return this.matching_blocks;
-        }
         int la = this.a.Length, lb = this.b.Length;
-        List<int[]> matching_blocks = _GetMatchingBlocks(0, la, 0, lb);
-        SortMatches(matching_blocks);
+        List<int[]> matching = _GetMatchingBlocks(0, la, 0, lb);
+        SortMatches(matching);
 
-        return matching_blocks;
+        return matching;
     }
 
     public double Ratio() {
@@ -177,12 +174,10 @@ class SequenceMatcher {
         return _CalculateRatio(matches, this.a.Length + this.b.Length);
     }
 
-    public double QuickRatio() {
-        return 1.0;
-    }
-
     public double RealQuickRatio() {
-        return 1.0;
+        // can't have more matches than the number of elements in the
+        // shorter sequence
+        return _CalculateRatio(Math.Min(this.a.Length, this.b.Length), this.a.Length + this.b.Length);
     }
 }
 
@@ -205,7 +200,7 @@ class Utils {
         Console.WriteLine("Looking for close match for {0} in {1} possibilities", word, possibilities.Count);
         foreach(string x in possibilities) {
             s.SetSeq1(x);
-            if (s.RealQuickRatio() >= cutoff && s.QuickRatio() >= cutoff) {
+            if (s.RealQuickRatio() >= cutoff) {
                 ratio = s.Ratio();
                 if (ratio >= cutoff) {
                     result.Add(word, x, (float) ratio);
