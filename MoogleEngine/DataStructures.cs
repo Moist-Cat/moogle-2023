@@ -12,13 +12,14 @@ class TopRanks {
      * given a criteria */
 
 
-    private int MAX_RANKED_VALUES = 5;
+    private int MAX_RANKED_VALUES;
     private Dictionary<string, List<Tuple<string, float>>> _dict = new Dictionary<string, List<Tuple<string, float>>>();
     public FileInfo CACHE_TOP;
 
-    public TopRanks(string cache_file) {
+    public TopRanks(string cache_file, int max=5) {
         CACHE_TOP = new FileInfo(Path.Join(Settings.BASE_DIR.ToString(), "cache_" + cache_file + ".json"));
         this._dict = Load();
+        this.MAX_RANKED_VALUES = max;
     }
 
     public void Add(string key, string val, float criteria) {
@@ -62,10 +63,15 @@ class TopRanks {
 
     public List<Tuple<string, float>> Get(string key) {
         if (!this._dict.ContainsKey(key)) {
+            // difflib goes here
             Console.WriteLine("ERROR: Key not found " + key);
             return new List<Tuple<string, float>>();
         }
         return this._dict[key];
+    }
+
+    public List<string> GetKeys() {
+        return new List<string>(this._dict.Keys);
     }
 
     public void Save() {

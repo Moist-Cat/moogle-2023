@@ -31,7 +31,7 @@ public static class Moogle
             foreach (Tuple<string, float> candidate in Ranker.TopRanked.Get(word)) {
                 //word = candidate.Item1
                 //tfidf = candidate.Item2;
-                Console.WriteLine("Found candidate " + candidate.Item1);
+                Console.WriteLine("INFO: Found candidate " + candidate.Item1);
                 if (!candidates.ContainsKey(candidate.Item1)) {
                     // init
                     candidates[candidate.Item1] = 0;
@@ -51,6 +51,11 @@ public static class Moogle
             items[count++] = new SearchItem(file.Key, Ranker.GetHighlight(file.Key, query.Split()), file.Value);
         }
 
-        return new SearchResult(items, query);
+        string suggestion = "";
+        if (items.Length == 0) {
+            Utils.GetCloseMatches(query, Ranker.TopRanked.GetKeys());
+        }
+
+        return new SearchResult(items, suggestion);
     }
 }

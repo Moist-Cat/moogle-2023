@@ -1,5 +1,7 @@
 using System;
 
+namespace MoogleEngine;
+
 class SequenceMatcher {
     /* Taken from difflib.py
      * 
@@ -27,6 +29,8 @@ class SequenceMatcher {
     }
 
     public double Ratio() {
+        int sum = 0;
+        //for triple in this.GetMatchingB
         return 1.0;
     }
 
@@ -41,7 +45,7 @@ class SequenceMatcher {
 
 class Utils {
 
-    List<string> GetCloseMatches(string word, List<string> possibilities, int n=3, double cutoff=0.6) {
+    public static TopRanks GetCloseMatches(string word, List<string> possibilities, int n=1, double cutoff=0.6) {
         /* Return the best matches for the word */
         if (n <= 0) {
             Console.WriteLine("ERROR: N can't be 0");
@@ -50,7 +54,8 @@ class Utils {
             Console.WriteLine("ERROR: Cutoff was outside valid range");
         }
 
-        List<string> result = new List<string>();
+        // this can save a cache but we don't really need it riht now
+        TopRanks result = new TopRanks("difflib", n);
         SequenceMatcher s = new SequenceMatcher();
         double ratio = 0.0;
         foreach(string x in possibilities) {
@@ -58,7 +63,7 @@ class Utils {
             if (s.RealQuickRatio() >= cutoff && s.QuickRatio() >= cutoff) {
                 ratio = s.Ratio();
                 if (ratio >= cutoff) {
-                    result.Append(x);
+                    result.Add(word, x, (float) ratio);
                 }
             }
         }
