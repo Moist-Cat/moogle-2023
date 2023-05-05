@@ -18,7 +18,9 @@ public static class Moogle
         Ranker rk = new Ranker();
         // we don't want duplicates
         Dictionary<string, float> candidates = new Dictionary<string, float>();
-        string word;
+        List<Tuple<string, float>> suggestion_ranks;
+        // XXX detect when we need to suggest because we only show bad words
+        string word, suggestion="";
 
         // partition the terms of the query
         foreach(string _word in query.Split(" ")) {
@@ -39,6 +41,17 @@ public static class Moogle
                 // increase score to sort them later
                 candidates[candidate.Item1] += candidate.Item2;
             };
+            if (Ranker.TopRanked.Get(word).Count == 0) {
+                // add suggestion
+                Console.WriteLine("INFO: Bad word {0}. Computing suggestion...", word);
+                suggestion_ranks = Utils.GetCloseMatches(word, Ranker.TopRanked.GetKeys()).Get(word);
+                if (suggestion_ranks.Count > 0) {
+                    suggestion += " " + suggestion_ranks[0].Item1;
+                }
+                else {
+                    Console.WriteLine("ERROR: Failed to get sensible suggestion for {0}", word);
+                }
+            }
             
         }
 
@@ -50,11 +63,7 @@ public static class Moogle
             // where Key is the filename and Value the score
             items[count++] = new SearchItem(file.Key, Ranker.GetHighlight(file.Key, query.Split()), file.Value);
         }
-
-        string suggestion = "";
-        if (items.Length == 0) {
-            suggestion = Utils.GetCloseMatches(query, Ranker.TopRanked.GetKeys()).Get(query)[0].Item1;
-        }
+        Console.WriteLine(suggestion);
 
         return new SearchResult(items, suggestion);
     }
