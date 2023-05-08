@@ -1,1 +1,1 @@
-python -m markdown Readme.md > Readme.html
+python -m markdown $1 > $1.html

@@ -372,7 +372,6 @@ class Ranker {
 
     public static int GetWC(string word) {
         /* Getter for WC */
-        // TODO implement meme difflib algo
         return WC[word];
     }
 

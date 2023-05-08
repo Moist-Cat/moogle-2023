@@ -192,7 +192,7 @@ class Utils {
             Console.WriteLine("ERROR: Cutoff was outside valid range");
         }
 
-        // this can save a cache but we don't really need it riht now
+        // this class save a cache but we don't really need it
         TopRanks result = new TopRanks("difflib", n);
         SequenceMatcher s = new SequenceMatcher();
         s.SetSeq2(word);

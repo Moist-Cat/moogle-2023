@@ -1,1 +1,1 @@
-wkhtmltopdf Readme.html Readme.pdf
+wkhtmltopdf $1 $1.pdf
