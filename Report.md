@@ -3,6 +3,16 @@ The Moogle! search engine
 
 ![](moogle.png)
 
+>Proyecto de Programación I.
+
+>Facultad de Matemática y Computación.
+
+>Universidad de La Habana.
+
+>Curso 2023
+
+>Luis Ernesto Amat Cárdenas (C-122)
+
 # Index
 
 - Data Structures

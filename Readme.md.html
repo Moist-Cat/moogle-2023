@@ -51,7 +51,7 @@ That's exactly what <a href="https://en.wikipedia.org/wiki/Tf%E2%80%93idf">tf-id
 <h3>I noticed that when I make a typo Moogle! gives me a suggestion. How does it work?</h3>
 <p>The code is ported almost ad verbatim from the difflib python module.
 Basically, we iterate through all the words. For every word we check if they have substrings in common recursively and then we count the characters of all the substring and calculate the similarity.
-The main difference with the python version is that we use recursivity (because it's not an issue in C#) and we don't check for "junk" characters (a feature of the difflib module), and some handling for edge cases that are not that relevant for our needs (optimization for very long strings, joining substrings, etc). I deemed those unnecessarily complex for out use-case.</p>
+The main difference with the python version is that we use recursivity (because it looks cleaner this way) and we don't check for "junk" characters (a feature of the difflib module), and some handling for edge cases that are not that relevant for our needs (optimization for very long strings, joining substrings, etc). I deemed those unnecessarily complex for out use-case.</p>
 <h2>How does it work?</h2>
 <h3>Startup (during first query)</h3>
 <ol>
