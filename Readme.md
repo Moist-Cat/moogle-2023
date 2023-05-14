@@ -67,7 +67,7 @@ That's exactly what [tf-idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) is. W
 ### I noticed that when I make a typo Moogle! gives me a suggestion. How does it work?
 The code is ported almost ad verbatim from the difflib python module.
 Basically, we iterate through all the words. For every word we check if they have substrings in common recursively and then we count the characters of all the substring and calculate the similarity.
-The main difference with the python version is that we use recursivity (because it looks cleaner this way) and we don't check for "junk" characters (a feature of the difflib module), and some handling for edge cases that are not that relevant for our needs (optimization for very long strings, joining substrings, etc). I deemed those unnecessarily complex for out use-case.
+The main difference with the python version is that we use recursivity (because it looks cleaner this way) and we don't check for "junk" characters (a feature of the difflib module), and some handling for edge cases that are not that relevant for our needs (optimization for very long strings, joining substrings, etc). I deemed those unnecessarily complex for our use-case.
 
 ## How does it work?
 
@@ -89,3 +89,7 @@ The logic is inside the MoogleEngine folder.
 - DataStructures.cs: Contains classes to store data including all the utility functions they need to function. Here you will find the Ranker class with most of the core features Moogle! uses
 - Difflib.cs: C# port of the difflib python module
 - Settings.cs: self explanatory
+
+## What is Report.html.pdf
+
+Detailed documentation explaining technical details of the implementation of the Moogle! search engine.
