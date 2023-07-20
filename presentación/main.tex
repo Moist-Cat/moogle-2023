@@ -1,0 +1,38 @@
+% !TEX root = main.tex
+
+\documentclass{beamer}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{bookmark}
+\usepackage{url}
+\usepackage{graphicx}
+
+%\usepackage{beamerthemesplit}
+%\usetheme{lucid}
+
+\lstdefinestyle{latexStyle}{
+    language=[LaTeX]{TeX},
+    belowcaptionskip=1\baselineskip,
+    breaklines=true,
+    frame=none,
+    numbers=none,
+    basicstyle=\footnotesize\ttfamily,
+    keywordstyle=\bfseries\color{green!40!black},
+    commentstyle=\itshape\color{purple!40!black},
+    identifierstyle=\color{blue},
+    backgroundcolor=\color{gray!10!white},
+}
+\lstset{style=latexStyle}
+
+\title{The Moogle! Search Engine}
+\author{Luis Ernesto Amat Cardenas (C-122)}
+
+\begin{document}
+\maketitle
+
+\include{Sections/intro}
+\include{Sections/flow}
+\include{Sections/structure}
+
+\end{document}
+
