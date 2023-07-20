@@ -14,8 +14,12 @@ clean() {
     
     # this is simple
     # since rm doesn't delete hidden directories and .git is (indeed) a hidden directory
-    rm -rf $BASE_DIR
+    cd "$BASE_DIR"
+    rm -rf "$BASE_DIR"/*
+    # reset
     git reset --hard
+    # go back
+    cd -
     echo "the purge was a success"
     return 0;
 }
