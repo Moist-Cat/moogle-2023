@@ -1,4 +1,7 @@
-BASE_DIR=$(dirname "$PWD")
+# git root
+# because if I do it normally (dirname "$PWD") it could lead to unfortunate results if anyone dares to
+# run the "clean" command
+BASE_DIR=$(git rev-parse --show-toplevel)
 
 
 run() {
@@ -11,6 +14,9 @@ run() {
 
 clean() {
     # delete unnecesary (not tracked) files
+    # XXX i'm not bold enough to delete dotfiles
+    # XXX this gives a scary message if you execute it
+    # XXX be careful running this outside the repository 
     
     # this is simple
     # since rm doesn't delete hidden directories and .git is (indeed) a hidden directory
@@ -18,8 +24,6 @@ clean() {
     rm -rf "$BASE_DIR"/*
     # reset
     git reset --hard
-    # go back
-    cd -
     echo "the purge was a success"
     return 0;
 }
