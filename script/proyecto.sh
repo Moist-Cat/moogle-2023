@@ -55,8 +55,8 @@ report() {
         return 0;
     fi
 
-    cd $REPORT_DIR
-    $COMPILER $REPORT_FILE -output-directory 
+    cd "$REPORT_DIR"
+    $COMPILER "$REPORT_FILE"
     cd -
     echo $TIMESTAMP > "$TIMESTAMP_CACHE"
 
@@ -78,8 +78,8 @@ slides() {
         return 0;
     fi
 
-    cd $PRESENTATION_DIR
-    $COMPILER $PRESENTATION_FILE
+    cd "$PRESENTATION_DIR"
+    $COMPILER "$PRESENTATION_FILE"
     cd -
     echo $TIMESTAMP > "$TIMESTAMP_CACHE"
 
@@ -92,7 +92,7 @@ show_report() {
         VIEW=$1
     fi
 
-    $VIEW $REPORT_COMPILED
+    $VIEW "$REPORT_COMPILED"
     return 0;
 }
 
@@ -102,7 +102,7 @@ show_slides() {
         VIEW=$1
     fi
 
-    $VIEW $PRESENTATION_COMPILED
+    $VIEW "$PRESENTATION_COMPILED"
     return 0;
 }
 
