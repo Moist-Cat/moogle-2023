@@ -1,16 +1,27 @@
-\section{Estructurar un documento}
+\section{Structure of the project}
 
-\begin{frame}
-    \begin{columns}[t]
-        \begin{column}{.5\textwidth}
-          \tableofcontents[sections={1-2},currentsection]
-        \end{column}
-        \begin{column}{.5\textwidth}
-          \tableofcontents[sections={3-4},currentsection]
-        \end{column}
-    \end{columns}
+\subsection{Data Structures}
+\begin{frame}[fragile]{Data Structures}
+    \subsubsection{Datastructures.cs}
+        \begin{itemize}
+            \item{Here you can find the core of the application.}
+            \item{\textbf{Ranked class}: A singleton who deals with all the parsing and stores the text from the documents in a way they can be easily processed}
+            \item{\textbf{TopRanks class}: Wrapper for a dictionary where only the top N values (given a criteria) are kept.}
+        \end{itemize}
+    
+    \subsubsection{Difflib.cs}
+        \begin{itemize}
+            \item{A C\# port of the difflib library of python}
+            \item{\textbf{SequenceMatcher class}: Implements an algorithm to find the ratio of similarity between two string}
+            \item{\textbf{Utils.GetCloseMatches method}: We simply calculate the ratio of similarity of the word given and a list of possibilities}
+        \end{itemize}
+   
 \end{frame}
 
-\subsection{}
-\begin{frame}[fragile]{}
+\subsection{Configurations}
+\begin{frame}[fragile]{Configurations}
+    \begin{itemize}
+        \item{See Settings.cs. Here you can configure the base directories (it's not a good idea to change this).}
+        \item{Regardless, most classes have static parameters that can be safely edited like the filenames for the cache files or how many results we want per word in the query (default is 5), etc.}
+     \end{itemize}
 \end{frame}

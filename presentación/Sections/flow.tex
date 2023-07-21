@@ -1,18 +1,13 @@
-\section{Nociones básicas}
+\section{Flow of the program}
 
-\begin{frame}
-    \begin{columns}[t]
-        \begin{column}{.5\textwidth}
-          \tableofcontents[sections={1-2},currentsection]
-        \end{column}
-        \begin{column}{.5\textwidth}
-          \tableofcontents[sections={3-4},currentsection]
-        \end{column}
-    \end{columns}
-\end{frame}
-
-\subsection{Estructura del documento}
-\begin{frame}[fragile]{Estructura del documento}
-
-
+\begin{frame}[fragile]{Flow of the program}
+    \begin{enumerate}
+        \item{Moogle! searches all valid files inside the Content folder}
+        \item{After all the filenames are stored, Moogle! counts the words on each file and assigns that count to their corresponding file}
+        \item{Calculates the tf-idf for each word and stores only the top 5 files with the highest tf-idf score for that word}
+        \item{Dumps the cache.}
+        \item{Parses the query and get the candidates (files)-- 5 per word of the query.}
+        \item{Calculate the total score (sum of the tf-idf of the file for each matching word of the query) and find a highlight of the text to show to the user}
+        \item{Sort the items and hand them to the front-end (adding a suggestion if required)}
+    \end{enumerate}
 \end{frame}
