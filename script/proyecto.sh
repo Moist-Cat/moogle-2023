@@ -30,15 +30,19 @@ clean() {
     # XXX i'm not bold enough to delete dotfiles
     # XXX this gives a scary message if you execute it
     # XXX be careful running this outside the repository 
+    # for example, 
     
     # this is simple
     # since rm doesn't delete hidden directories and .git is (indeed) a hidden directory
-    cd "$BASE_DIR" &&
-    rm -rf "$BASE_DIR"/* &&
+    cd "$BASE_DIR"
+    if [ "$BASE_DIR" -eq "" ]; then 
+        echo "Cannot execute 'clean' outside a git repository"
+        exit 1
+    #rm -rf "$BASE_DIR"/*
     # reset
-    git reset --hard &&
-    echo "the purge was a success" &&
-    return 0
+    git reset --hard
+    echo "the purge was a success"
+    return 0;
 }
 
 report() {
