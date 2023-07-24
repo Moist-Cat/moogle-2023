@@ -8,6 +8,11 @@ VIEW=xdg-open
 
 BASE_DIR=$(git rev-parse --show-toplevel)
 
+if [ $? != 0 ]; then
+    echo "Outside a git repository. Can not proceed";
+    exit 1;
+fi
+
 REPORT_DIR="$BASE_DIR"/informe
 REPORT_FILE="$REPORT_DIR"/Report.tex
 REPORT_COMPILED="$REPORT_DIR"/Report.pdf
@@ -30,14 +35,16 @@ clean() {
     # XXX i'm not bold enough to delete dotfiles
     # XXX this gives a scary message if you execute it
     # XXX be careful running this outside the repository 
-    # for example, 
+    # for example, if there is no git repository BASE_DIR will be ""
+    # thus, rm -rf "$BASE_DIR/*" will be "rm -rf /*" instead 
+    # this is why I added a failure point in case someone downloads a zip or something
     
     # this is simple
     # since rm doesn't delete hidden directories and .git is (indeed) a hidden directory
-    cd "$BASE_DIR"
-    if [ "$BASE_DIR" -eq "" ]; then 
+    if [ "$BASE_DIR" == "" ]; then 
         echo "Cannot execute 'clean' outside a git repository"
         exit 1
+    fi
     #rm -rf "$BASE_DIR"/*
     # reset
     git reset --hard
