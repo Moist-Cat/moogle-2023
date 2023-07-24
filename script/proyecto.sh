@@ -33,19 +33,21 @@ run() {
 clean() {
     # delete unnecesary (not tracked) files
     # XXX i'm not bold enough to delete dotfiles
-    # XXX this gives a scary message if you execute it
+    # XXX this gives a scary message if you execute it in this directory
+    #
     # XXX be careful running this outside the repository 
     # for example, if there is no git repository BASE_DIR will be ""
     # thus, rm -rf "$BASE_DIR/*" will be "rm -rf /*" instead 
     # this is why I added a failure point in case someone downloads a zip or something
+    # (no linux box was destroyed during the execution of this command)
     
-    # this is simple
-    # since rm doesn't delete hidden directories and .git is (indeed) a hidden directory
     if [ "$BASE_DIR" == "" ]; then 
         echo "Cannot execute 'clean' outside a git repository"
         exit 1
     fi
-    #rm -rf "$BASE_DIR"/*
+    # this is simple
+    # since rm doesn't delete hidden directories and .git is (indeed) a hidden directory
+    rm -rf "$BASE_DIR"/*
     # reset
     git reset --hard
     echo "the purge was a success"
@@ -127,12 +129,12 @@ help() {
     # i could wipe the private (starting with (_)) functions
     # to improve it but we didn't use them this time
     CMDS=$(compgen -A function | tr "\n" "|")
-    echo "Use: $0 [$CMDS]]"
+    echo "Use: $0 [$CMDS]"
     exit 1;
 }
 
 # what's this, you ask?
-# I just named my functions as the commands so I don't have to make a switch
+# I just named my functions as the commands so I don't have to use a switch statement
 $1 $2
 
 if [ $? != 0 ]
